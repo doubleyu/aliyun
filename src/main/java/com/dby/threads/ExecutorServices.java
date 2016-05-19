@@ -1,15 +1,15 @@
 package com.dby.threads;
 
+import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.PutObjectRequest;
 import com.dby.io.ReadBigFile;
 import oss.OSSClientManager;
 import oss.OSSSimpleUploader;
 
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.util.concurrent.*;
 
 /**
@@ -40,16 +40,12 @@ public class ExecutorServices {
 
     public static void main(String args[]) {
 
-/*        for (String fileName : ReadBigFile.readBigTxt()) {
+        for (String fileName : ReadBigFile.readBigTxt()) {
             String localPath = "E:/vbox/gjqt-log/log_file/" + fileName;
             exec.execute(new UploadRunner(localPath, fileName));
 
-        }*/
-
-
-        for(int i=0;i<10;i++){
-            exec.execute(new TestSingletonRunner());
         }
+
         ;
 
 
@@ -75,12 +71,12 @@ public class ExecutorServices {
 }
 
 class UploadRunner implements Runnable {
-    private static final String bucketName = "";//OSSSimpleUploader 写死，你懂的
+    private static final String bucketName = "my-oss-bucket74f32080-35d0-46a8-847c-c269469eaa5a";//此处暂时写死
     private static final String fileListName = "E:/vbox/gjqt-log/log_file/fileList.txt";
     private String localPath;
     private String ossPath;
 
-    private static OSSSimpleUploader ossSimpleUploader = new OSSSimpleUploader();
+    OSSClient ossClient = OSSClientManager.getInstance().getOSSClient();
 
     UploadRunner(String localPath, String ossPath) {
         this.localPath = localPath;
@@ -89,10 +85,20 @@ class UploadRunner implements Runnable {
 
     public void run() {
         System.out.println(Thread.currentThread().getName() + "线程被调用了。");
-//        System.out.println("localPath : " + localPath + "  ossPath : " + ossPath);
+        System.out.println("OSSClient : "+ossClient);
 
-        ossSimpleUploader.uploadToOSS(bucketName, localPath, ossPath);
-        System.out.println("ossSimpleUploader " + ossSimpleUploader.toString());
+        File file = new File(localPath);
+        try {
+            ossClient.putObject(new PutObjectRequest(bucketName, ossPath, file));
+        } catch (OSSException e) {
+            e.printStackTrace();
+            return;
+        } catch (ClientException e) {
+            e.printStackTrace();
+            return;
+        } catch (Exception e){
+            return;
+        }
         System.out.println("FINISH " + localPath);
         writeToFileList(ossPath);
     }

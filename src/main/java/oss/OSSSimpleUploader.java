@@ -16,6 +16,7 @@ import java.util.Arrays;
  * This sample demonstrates how to upload/download an object to/from
  * Aliyun OSS using the OSS SDK for Java.
  */
+@Deprecated
 public class OSSSimpleUploader {
 
     private static String endpoint = "oss-cn-hangzhou.aliyuncs.com";
